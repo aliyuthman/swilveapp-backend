@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
+import { InitiatePaymentDto } from './dto/initiate-payment.dto';
 
 @Controller('payments')
 export class PaymentsController {
@@ -7,9 +8,12 @@ export class PaymentsController {
 
   @Post()
   async initiatePayment(
-    @Body('userId') userId: string,
-    @Body('amount') amount: number,
+    @Body() dto: InitiatePaymentDto,
   ) {
-    return this.paymentsService.initiatePayment(userId, amount);
+    return this.paymentsService.initiatePayment(
+      dto.userId,
+      dto.amount,
+      dto.customerId, // Pass customerId to service
+    );
   }
 }

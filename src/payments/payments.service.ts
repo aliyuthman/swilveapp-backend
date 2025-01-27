@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Flutterwave } from 'flutterwave-node-v3';
 import { v4 as uuidv4 } from 'uuid';
-import { DatabaseService } from '../database/database.service'; // Add this import
+import { DatabaseService } from '../database/database.service';
 import { transactions } from '../database/schema';
 
 @Injectable()
@@ -11,16 +11,22 @@ export class PaymentsService {
     process.env.FLUTTERWAVE_SECRET_KEY!,
   );
 
-  constructor(private readonly db: DatabaseService) {} // Inject DatabaseService
+  constructor(private readonly db: DatabaseService) {}
 
-  async initiatePayment(userId: string, amount: number) {
+  async initiatePayment(
+    userId: string, 
+    amount: number, 
+    customerId: string // Add customerId parameter
+  ) {
     const reference = `BILLPAY-${uuidv4()}`;
 
-    await this.db.db.insert(transactions).values({ // Access via this.db.db
+    await this.db.db.insert(transactions).values({
       userId,
       amount: amount.toString(),
       status: 'pending',
       reference,
+      customerId, // Include customerId in transaction
+      billerId: 'biller-id', // Replace with actual biller ID
     });
 
     return this.flw.Transaction.charge({

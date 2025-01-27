@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { DatabaseService } from '../database/database.service';
@@ -26,5 +26,20 @@ export class AuthService {
     }).returning();
 
     return { accessToken: this.jwtService.sign({ sub: newUser.id }) };
+  }
+
+
+  async login(phone: string, password: string) {
+    const user = await this.db.db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.phone, phone),
+    });
+  
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+  
+    return {
+      access_token: this.jwtService.sign({ sub: user.id }),
+    };
   }
 }
